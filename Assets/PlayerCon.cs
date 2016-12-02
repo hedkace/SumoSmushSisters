@@ -5,12 +5,14 @@ public class PlayerCon : MonoBehaviour {
 
     public float dToGround;
     public float dJump;
+    public float dPunch;
+    public float wallop;
     public float gValue;
     public float friction;
     public float jump;
     public float speed;
     public float dFix;
-
+    public GameObject opponent;
 
     private bool bGoingSomewhere;
     private Quaternion direction;
@@ -63,18 +65,18 @@ public class PlayerCon : MonoBehaviour {
         }
         gEffect = Vector3.down / 2f * gValue;
         RaycastHit hit;
-        Debug.Log(Physics.Raycast(new Ray(transform.position, Vector3.down), out hit));
+        //Debug.Log(Physics.Raycast(new Ray(transform.position, Vector3.down), out hit));
         try
         {
             if (Physics.Raycast(new Ray(transform.position, Vector3.down), out hit))
             {
-                Debug.Log(hit.distance);
+                //Debug.Log(hit.distance);
                 if (hit.distance < dJump)
                 {
-                    if (hit.collider.tag.Contains("Ground") /*&& rb.velocity.y < 0*/)
+                    if (hit.collider.tag.Contains("Ground") && rb.velocity.y <= 0)
                     {
                         bDoubleJump = false;
-                        //rb.velocity = Vector3.ProjectOnPlane(rb.velocity, Vector3.up);
+                        rb.velocity = Vector3.ProjectOnPlane(rb.velocity, Vector3.up);
                         gEffect = Vector3.zero;
                         rb.velocity *= .9f;
                         //rb.MovePosition(transform.position - Vector3.up * (dFix - hit.distance)); 
@@ -96,12 +98,42 @@ public class PlayerCon : MonoBehaviour {
         {
 
         }
-        Debug.Log(gEffect);
+        //Debug.Log(gEffect);
         rb.velocity += gEffect;
 
         //*** End Controls
 
 
+        //*** Punch
+
+        Debug.DrawRay(this.transform.position, this.transform.forward );
+        if (Input.GetKeyDown(KeyCode.Alpha0  ) || Input.GetKeyDown(KeyCode.Keypad0))
+        {
+            Debug.Log("Input Registered");
+            Debug.Log(Physics.Raycast(new Ray(transform.position, transform.forward), out hit));
+            try
+            {
+                Debug.Log("try ran");
+                if (Physics.Raycast(new Ray(transform.position, transform.forward), out hit))
+                {
+                    Debug.Log("Hello");
+                    if (hit.distance < dPunch)
+                    {
+                        Debug.Log("In range");
+                        if (hit.collider.gameObject == opponent.gameObject)
+                        {
+                            Debug.Log("Impulse Applied");
+                            opponent.GetComponent<Rigidbody>().AddForce(wallop*transform.forward,ForceMode.Impulse);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+        }
+        
 
 
         //*** Start Boundary Check
