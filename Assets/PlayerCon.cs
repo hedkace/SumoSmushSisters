@@ -28,12 +28,10 @@ public class PlayerCon : MonoBehaviour {
     private bool bDoubleJump;
     private Vector3 velocity;
     private Vector3 planarRight;
-    private Vector3 castShift;
 
 	// Use this for initialization
 	void Start ()
     {
-        castShift = - Vector3.up * .4f;
         rotation = Quaternion.LookRotation(Vector3.right, Vector3.up);
         //rb = GetComponent<Rigidbody>();
         velocity = Vector3.zero;
@@ -63,7 +61,6 @@ public class PlayerCon : MonoBehaviour {
         {
             planarNorm = toeHit.normal;
             planarRight = new Vector3(toeHit.normal.y, -tailHit.normal.x, 0f);
-            castShift = - Vector3.up * .4f - Vector3.right;
 
         }
 
@@ -71,37 +68,97 @@ public class PlayerCon : MonoBehaviour {
         {
             planarNorm = tailHit.normal;
             planarRight = new Vector3(tailHit.normal.y, -tailHit.normal.x, 0f);
-            castShift = - Vector3.up * .4f + Vector3.right;
         }/*
         else
         {
             castShift = - Vector3.up * .4f;
         }*/
-        Ray downWhisker = new Ray(transform.position + castShift, Vector3.down * 5f);
-        Debug.DrawRay(transform.position + castShift, Vector3.down * 5f);
-        RaycastHit downHit;
-        bool bUnderFoot = Physics.Raycast(downWhisker, out downHit);
-        /*delY = .5f * Mathf.Sin(Vector3.Angle(new Vector3(1f, 0f, 0f), planarRight));*/
+        Ray downWhiskerL = new Ray(transform.position - Vector3.up * .4f - Vector3.right, Vector3.down * 5f);
+        Debug.DrawRay(transform.position - Vector3.up * .4f - Vector3.right, Vector3.down * 5f);
+        Ray downWhiskerR = new Ray(transform.position - Vector3.up * .4f + Vector3.right, Vector3.down * 5f);
+        Debug.DrawRay(transform.position - Vector3.up * .4f + Vector3.right, Vector3.down * 5f);
+        RaycastHit downHitL;
+        RaycastHit downHitR;
+        bool bUnderLFoot = Physics.Raycast(downWhiskerL, out downHitL);
+        bool bUnderRFoot = Physics.Raycast(downWhiskerR, out downHitR);
         bOnGround = false;
-        if (bUnderFoot)
+        if (bUnderLFoot && bUnderRFoot)
         {
-            if (downHit.distance <= 1f + dFix)
+            if (downHitL.distance <= downHitR.distance)
             {
-                if (downHit.collider.tag.Contains("Ground") && velocity.y <= 0)
+                if (downHitL.distance <= 1f + dFix)
+                {
+                    if (downHitL.collider.tag.Contains("Ground") && velocity.y <= 0)
+                    {
+                        float sign = 0;
+                        if (planarNorm.x != 0)
+                        {
+                            sign = Mathf.Sign(planarNorm.x);
+                        }
+                        transform.Translate(downHitL.point + Vector3.up * (.1f + dFix) - (transform.position - Vector3.up * .4f - Vector3.right));
+                        bOnGround = true;
+
+                    }
+                }
+            }
+            else
+            {
+                if (downHitR.distance <= 1f + dFix)
+                {
+                    if (downHitR.collider.tag.Contains("Ground") && velocity.y <= 0)
+                    {
+                        float sign = 0;
+                        if (planarNorm.x != 0)
+                        {
+                            sign = Mathf.Sign(planarNorm.x);
+                        }
+                        transform.Translate(downHitR.point + Vector3.up * (.1f + dFix) - (transform.position - Vector3.up * .4f + Vector3.right));
+                        bOnGround = true;
+
+                    }
+                }
+            }
+        }
+        else if (bUnderRFoot)
+        {
+            if (downHitR.distance <= 1f + dFix)
+            {
+                if (downHitR.collider.tag.Contains("Ground") && velocity.y <= 0)
                 {
                     float sign = 0;
-                    if ( planarNorm.x != 0)
+                    if (planarNorm.x != 0)
                     {
                         sign = Mathf.Sign(planarNorm.x);
                     }
-                    transform.Translate(downHit.point + Vector3.up * (.1f + dFix)  - (transform.position + castShift));
+                    transform.Translate(downHitR.point + Vector3.up * (.1f + dFix) - (transform.position - Vector3.up * .4f + Vector3.right));
                     bOnGround = true;
 
                 }
             }
         }
+        else if (bUnderLFoot)
+        {
+            if (downHitL.distance <= 1f + dFix)
+            {
+                if (downHitL.collider.tag.Contains("Ground") && velocity.y <= 0)
+                {
+                    float sign = 0;
+                    if (planarNorm.x != 0)
+                    {
+                        sign = Mathf.Sign(planarNorm.x);
+                    }
+                    transform.Translate(downHitL.point + Vector3.up * (.1f + dFix) - (transform.position - Vector3.up * .4f - Vector3.right));
+                    bOnGround = true;
 
-        if(bOnGround)
+                }
+            }
+        }
+        else
+        {
+
+        }
+
+        if (bOnGround)
         {
             velocity = Vector3.Normalize(planarRight * Input.GetAxisRaw("Horizontal" + playerNumber.ToString())) * speed * Time.deltaTime;
 
@@ -139,15 +196,19 @@ public class PlayerCon : MonoBehaviour {
         */
 
         //*** End Spin Action
+        
 
-
-
+        //*** Kill Tiny Movements
         if (Mathf.Abs(velocity.x) < .01f) velocity.x = 0;
         if (Mathf.Abs(velocity.y) < .01f) velocity.y = 0;
         if (Mathf.Abs(velocity.z) < .01f) velocity.z = 0;
         
+        //*** Move within the plane (pseudo-3D)
         transform.Translate(velocity);
         transform.position  = Vector3.ProjectOnPlane(transform.position, Vector3.forward);
+
+
+
 
         /*   Old Controls
 
@@ -237,7 +298,7 @@ public class PlayerCon : MonoBehaviour {
 
 
         //*** Punch
-
+        RaycastHit downHit;
         Debug.DrawRay(this.transform.position, Vector3.right );
         if (Input.GetKeyDown(KeyCode.Alpha0  ) || Input.GetKeyDown(KeyCode.Keypad0))
         {
