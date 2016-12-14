@@ -17,9 +17,9 @@ public class PlayerCon : MonoBehaviour {
     public GameObject opponent;
     public bool bOnGround;
     public float slopeAngle;
+    public int direction;
 
     private bool bGoingSomewhere;
-    private int direction;
     private Quaternion rotation;
     private Quaternion quat;
     //private Rigidbody rb;
