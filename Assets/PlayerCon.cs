@@ -18,6 +18,13 @@ public class PlayerCon : MonoBehaviour {
     public bool bOnGround;
     public float slopeAngle;
     public int direction;
+    public float stanceWidth;
+    public float stanceHeight;
+    public float toeLength;
+    public float LandingHeight;
+    public float mass;
+    public bool punching;
+    public bool kicking;
 
     private bool bGoingSomewhere;
     private Quaternion rotation;
@@ -45,15 +52,15 @@ public class PlayerCon : MonoBehaviour {
         if (Input.GetAxis("Horizontal" + playerNumber.ToString()) > 0) direction = 1; else direction = -1;
 
 
-        Debug.DrawRay(transform.position - Vector3.up * .4f - transform.right * .4f, -transform.right, Color.yellow);
-        Ray toeWhisker = new Ray(transform.position - Vector3.up * .4f - Vector3.right * .4f, -transform.right);
+        Debug.DrawRay(transform.position - Vector3.up * (stanceHeight/2f - .1f) - transform.right * (stanceWidth / 2f - .1f), -transform.right * toeLength, Color.yellow);
+        Ray toeWhisker = new Ray(transform.position - Vector3.up * (stanceHeight / 2f - .1f) - Vector3.right * (stanceWidth / 2f - .1f), -transform.right);
         RaycastHit toeHit;
-        bool bStubToe = Physics.Raycast(toeWhisker, out toeHit, 1f);
+        bool bStubToe = Physics.Raycast(toeWhisker, out toeHit, toeLength);
 
-        Debug.DrawRay(transform.position - Vector3.up * .4f + transform.right * .4f, transform.right, Color.cyan);
-        Ray tailWhisker = new Ray(transform.position - Vector3.up * .4f + Vector3.right * .4f, transform.right);
+        Debug.DrawRay(transform.position - Vector3.up * (stanceHeight / 2f - .1f) + transform.right * (stanceWidth / 2f - .1f), transform.right * toeLength, Color.cyan);
+        Ray tailWhisker = new Ray(transform.position - Vector3.up * (stanceHeight / 2f - .1f) + Vector3.right * (stanceWidth / 2f - .1f), transform.right);
         RaycastHit tailHit;
-        bool bCatchTail = Physics.Raycast(tailWhisker, out tailHit, 1f);
+        bool bCatchTail = Physics.Raycast(tailWhisker, out tailHit, toeLength);
         Vector3 planarNorm = new Vector3(0f, 1f, 0f);
         planarRight = new Vector3(1f, 0f, 0f);
 
@@ -73,10 +80,10 @@ public class PlayerCon : MonoBehaviour {
         {
             castShift = - Vector3.up * .4f;
         }*/
-        Ray downWhiskerL = new Ray(transform.position - Vector3.up * .4f - Vector3.right, Vector3.down * 5f);
-        Debug.DrawRay(transform.position - Vector3.up * .4f - Vector3.right, Vector3.down * 5f);
-        Ray downWhiskerR = new Ray(transform.position - Vector3.up * .4f + Vector3.right, Vector3.down * 5f);
-        Debug.DrawRay(transform.position - Vector3.up * .4f + Vector3.right, Vector3.down * 5f);
+        Ray downWhiskerL = new Ray(transform.position - Vector3.up * (stanceHeight / 2f - .1f) - Vector3.right * (stanceWidth / 2f - .1f), Vector3.down * dJump);
+        Debug.DrawRay(transform.position - Vector3.up * (stanceHeight / 2f - .1f) - Vector3.right * (stanceWidth / 2f - .1f), Vector3.down * LandingHeight);
+        Ray downWhiskerR = new Ray(transform.position - Vector3.up * (stanceHeight / 2f - .1f) + Vector3.right * (stanceWidth / 2f - .1f), Vector3.down * 5f);
+        Debug.DrawRay(transform.position - Vector3.up * (stanceHeight / 2f - .1f) + Vector3.right * (stanceWidth / 2f - .1f), Vector3.down * LandingHeight);
         RaycastHit downHitL;
         RaycastHit downHitR;
         bool bUnderLFoot = Physics.Raycast(downWhiskerL, out downHitL);
@@ -86,7 +93,7 @@ public class PlayerCon : MonoBehaviour {
         {
             if (downHitL.distance <= downHitR.distance)
             {
-                if (downHitL.distance <= 1f + dFix)
+                if (downHitL.distance <= LandingHeight + dFix)
                 {
                     if (downHitL.collider.tag.Contains("Ground") && velocity.y <= 0)
                     {
@@ -95,7 +102,7 @@ public class PlayerCon : MonoBehaviour {
                         {
                             sign = Mathf.Sign(planarNorm.x);
                         }
-                        transform.Translate(downHitL.point + Vector3.up * (.1f + dFix) - (transform.position - Vector3.up * .4f - Vector3.right));
+                        transform.Translate(downHitL.point + Vector3.up * (.1f + dFix) - (transform.position - Vector3.up * (stanceHeight / 2f - .1f) - Vector3.right * (stanceWidth / 2f - .1f)));
                         bOnGround = true;
 
                     }
@@ -103,7 +110,7 @@ public class PlayerCon : MonoBehaviour {
             }
             else
             {
-                if (downHitR.distance <= 1f + dFix)
+                if (downHitR.distance <= LandingHeight + dFix)
                 {
                     if (downHitR.collider.tag.Contains("Ground") && velocity.y <= 0)
                     {
@@ -112,7 +119,7 @@ public class PlayerCon : MonoBehaviour {
                         {
                             sign = Mathf.Sign(planarNorm.x);
                         }
-                        transform.Translate(downHitR.point + Vector3.up * (.1f + dFix) - (transform.position - Vector3.up * .4f + Vector3.right));
+                        transform.Translate(downHitR.point + Vector3.up * (.1f + dFix) - (transform.position - Vector3.up * (stanceHeight / 2f - .1f) + Vector3.right * (stanceWidth / 2f - .1f)));
                         bOnGround = true;
 
                     }
@@ -121,7 +128,7 @@ public class PlayerCon : MonoBehaviour {
         }
         else if (bUnderRFoot)
         {
-            if (downHitR.distance <= 1f + dFix)
+            if (downHitR.distance <= LandingHeight + dFix)
             {
                 if (downHitR.collider.tag.Contains("Ground") && velocity.y <= 0)
                 {
@@ -130,7 +137,7 @@ public class PlayerCon : MonoBehaviour {
                     {
                         sign = Mathf.Sign(planarNorm.x);
                     }
-                    transform.Translate(downHitR.point + Vector3.up * (.1f + dFix) - (transform.position - Vector3.up * .4f + Vector3.right));
+                    transform.Translate(downHitR.point + Vector3.up * (.1f + dFix) - (transform.position - Vector3.up * (stanceHeight / 2f - .1f) + Vector3.right * (stanceWidth / 2f - .1f)));
                     bOnGround = true;
 
                 }
@@ -138,7 +145,7 @@ public class PlayerCon : MonoBehaviour {
         }
         else if (bUnderLFoot)
         {
-            if (downHitL.distance <= 1f + dFix)
+            if (downHitL.distance <= LandingHeight + dFix)
             {
                 if (downHitL.collider.tag.Contains("Ground") && velocity.y <= 0)
                 {
@@ -147,7 +154,7 @@ public class PlayerCon : MonoBehaviour {
                     {
                         sign = Mathf.Sign(planarNorm.x);
                     }
-                    transform.Translate(downHitL.point + Vector3.up * (.1f + dFix) - (transform.position - Vector3.up * .4f - Vector3.right));
+                    transform.Translate(downHitL.point + Vector3.up * (.1f + dFix) - (transform.position - Vector3.up * (stanceHeight / 2f - .1f) - Vector3.right * (stanceWidth / 2f - .1f)));
                     bOnGround = true;
 
                 }
@@ -162,7 +169,7 @@ public class PlayerCon : MonoBehaviour {
         {
             velocity = Vector3.Normalize(planarRight * Input.GetAxisRaw("Horizontal" + playerNumber.ToString())) * speed * Time.deltaTime;
 
-            if (Input.GetButtonDown("Jump" + playerNumber.ToString()))
+            if (Input.GetAxisRaw("Vertical" + playerNumber.ToString())>=0.25f)
             {
                 velocity.y = jump;
             }
@@ -174,29 +181,6 @@ public class PlayerCon : MonoBehaviour {
             velocity.y = Mathf.Clamp(velocity.y, -5, 5);
         }
 
-        //*** Start Spin Action
-
-        /*
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, rotation, 10f);
-        if (Quaternion.Angle(rotation, transform.rotation) < .02) transform.rotation = rotation;
-
-
-        if (Input.GetButton("Horizontal" + playerNumber.ToString()))
-        {
-            if (Input.GetAxis("Horizontal" + playerNumber.ToString()) > 0)
-            {
-                rotation = Quaternion.LookRotation(Vector3.forward, Vector3.up);
-            }
-            else
-            {
-                rotation = Quaternion.LookRotation(Vector3.back, Vector3.up);
-            }
-        }
-
-        */
-
-        //*** End Spin Action
-        
 
         //*** Kill Tiny Movements
         if (Mathf.Abs(velocity.x) < .01f) velocity.x = 0;
@@ -300,10 +284,19 @@ public class PlayerCon : MonoBehaviour {
         //*** Punch
         RaycastHit downHit;
         Debug.DrawRay(this.transform.position, Vector3.right );
-        if (Input.GetKeyDown(KeyCode.Alpha0  ) || Input.GetKeyDown(KeyCode.Keypad0))
+        Debug.DrawRay(transform.position, -transform.forward - transform.up * 2f, Color.red);
+        kicking = false;
+        punching = false;
+        if (/*Input.GetKeyDown(KeyCode.Alpha0  ) || Input.GetKeyDown(KeyCode.Keypad0) || */Input.GetButtonDown("Fire1" + playerNumber.ToString()))
         {
             Debug.Log("Input Registered");
-            Debug.Log(Physics.Raycast(new Ray(transform.position, Vector3.right), out downHit));
+            //opponent.BroadcastMessage("explode", (-Vector3.right + Vector3.up * 2f)*5f);
+
+            //kicking = true;
+            punching = true;
+
+
+            /*Debug.Log(Physics.Raycast(new Ray(transform.position, Vector3.right), out downHit));
             try
             {
                 Debug.Log("try ran");
@@ -315,9 +308,7 @@ public class PlayerCon : MonoBehaviour {
                         Debug.Log("In range");
                         if (downHit.collider.gameObject == opponent.gameObject)
                         {
-                            Debug.Log("Impulse Applied");
-                            //opponent.GetComponent<Rigidbody>().AddForce(wallop* Vector3.right, ForceMode.Impulse);
-                            print("moo!");
+                            opponent.gameObject.BroadcastMessage("explode", transform.forward*10f);
                         }
                     }
                 }
@@ -325,7 +316,7 @@ public class PlayerCon : MonoBehaviour {
             catch
             {
 
-            }
+            }*/
         }
         //*** Start Boundary Check
 
@@ -352,6 +343,11 @@ public class PlayerCon : MonoBehaviour {
 
 
     
+    }
+
+    void explode(Vector3 explosion)
+    {
+        velocity += explosion / mass;
     }
 
 }

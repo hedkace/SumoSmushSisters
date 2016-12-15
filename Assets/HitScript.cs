@@ -2,9 +2,7 @@
 using System.Collections;
 
 public class HitScript : MonoBehaviour {
-
-    public Collider[] hitBoxes;
-
+    
 	// Use this for initialization
 	void Start () {
 	
@@ -12,25 +10,21 @@ public class HitScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        Collider[] cols = Physics.OverlapBox(hitBoxes[0].bounds.center, hitBoxes[0].bounds.extents, hitBoxes[0].transform.rotation);
-        foreach (Collider c in cols)
-        {
-            print(c.name);
-        }
-	}
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, GetComponent<SphereCollider>().radius);
 
-
-    void OnCollisionEnter(Collision otherThing)
-    {
-        print("hit");
-        /*
-        if (otherThing.tag.Contains("Player") && otherThing != null)
+        foreach (Collider col in hitColliders)
         {
-            PlayerCon player = otherThing.gameObject.GetComponent<PlayerCon>();
-            if (player.playerNumber != 1)
+            if (col.gameObject.tag.Contains("Player") && col.gameObject != transform.root.gameObject)
             {
-                print(player.playerNumber);
+                print("Hit Opponent");
+                if(GetComponentInParent<PlayerCon>().punching) col.BroadcastMessage("explode", (col.transform.position - transform.position).normalized * 1f);
             }
-        }*/
+
+        }
+    }
+
+
+    private void OnTriggerEnter(Collider otherThing)
+    {
     }
 }

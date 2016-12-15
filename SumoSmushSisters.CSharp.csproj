@@ -75,6 +75,7 @@
     <Compile Include="Assets\Animator1.cs" />
     <Compile Include="Assets\CamCon.cs" />
     <Compile Include="Assets\HitScript.cs" />
+    <Compile Include="Assets\HurtScript.cs" />
     <Compile Include="Assets\MM.cs" />
     <Compile Include="Assets\PlayerCon.cs" />
   </ItemGroup>

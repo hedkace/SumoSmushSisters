@@ -5,6 +5,8 @@ public class CamCon : MonoBehaviour {
 
     public GameObject player1;
     public GameObject player2;
+
+    public float smoothness;
     private Vector3 focus;
 
 
@@ -29,6 +31,6 @@ public class CamCon : MonoBehaviour {
     {
         float distance = (p1position - p2position).magnitude;
 
-        return 20f + 20f / (1 + Mathf.Exp(20f - distance)) + 20f / (1 + Mathf.Exp(60f - distance));
+        return 15f + 15f / (1 + Mathf.Exp((20f - distance)) * smoothness) + 15f / (1 + Mathf.Exp((60f - distance) * smoothness));
     }
 }
