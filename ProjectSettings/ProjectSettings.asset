@@ -525,7 +525,7 @@ PlayerSettings:
   vrEditorSettings: {}
   cloudServicesEnabled:
     Analytics: 0
-    Build: 0
+    Build: 1
     Collab: 1
     ErrorHub: 0
     Game_Performance: 0
@@ -535,5 +535,5 @@ PlayerSettings:
     Unity_Ads: 0
   cloudProjectId: e06e8d20-c886-4e18-a798-87319940871b
   projectName: SumoSmushSisters
-  organizationId: hedkace
+  organizationId: sumosmushsisters
   cloudEnabled: 0
